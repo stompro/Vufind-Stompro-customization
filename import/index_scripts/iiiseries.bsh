@@ -1,0 +1,49 @@
+import org.marc4j.marc.Record;
+import org.marc4j.marc.ControlField;
+import org.marc4j.marc.DataField;
+import org.marc4j.marc.VariableField;
+import org.marc4j.marc.Subfield;
+import org.solrmarc.tools.Utils;
+
+/**
+ * Determine Series
+ *  Only add numbered series (has v subfield) to facet
+ *
+ *  Customers only want to see series when it refers to books/items
+ *  in a series.  Skip things like "Warner Home Movies" series.
+ *
+ * @param  Record          record
+ * @return Set     format of record
+ */
+public Set getSeries(Record record){
+    	LinkedHashSet result = new LinkedHashSet();
+	
+	//get all series tags
+	List seriesfield = record.getVariableFields("490");
+	
+	//iterate through results
+        if (seriesfield.isEmpty())  return(null);
+        Iterator iter = seriesfield.iterator();
+        while (iter.hasNext())
+        {
+            DataField field = (DataField)iter.next();
+	 
+	   //Does the field have a v subfield
+	    Subfield subfieldv = field.getSubfield('v');
+	    if (subfieldv != null)
+	    {
+		//Does the field have an a subfield also
+		Subfield subfielda = field.getSubfield('a');
+            	if (subfielda != null)
+		{
+			//add subfield a to result
+			// Run through cleanData to remove trailing punct
+			result.add(Utils.cleanData(subfielda.getData()));
+		}
+	    }
+		
+	}
+
+	return result;
+    }         
+
